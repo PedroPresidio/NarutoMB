@@ -1,28 +1,36 @@
 import discord
-from discord import app_commands
 from dotenv import load_dotenv
 import os
+from pymongo import MongoClient
+from discord.ext import commands
+import rolls
 from database import *
 
-class client(discord.client):
+load_dotenv()
+
+TOKEN = os.getenv("BOT_TOKEN")
+MONGODB_TOKEN = os.getenv("MONGODB_TOKEN")
+
+# Rename the Mongo client variable to avoid colliding with the bot class name
+mongo_client = MongoClient(MONGODB_TOKEN)
+db = mongo_client["FavListDB"]
+
+
+class client(commands.Bot):
     def __init__(self):
-        super().__init__(intents=discord.Intents.default())
+        super().__init__(command_prefix=commands.when_mentioned, intents=discord.Intents.default())
         self.synced = False
 
     async def on_ready(self):
-        await self.wait_until_ready()
         if not self.synced:
-            await tree.sync()
+            # sync the global app command tree
+            await self.tree.sync()
             self.synced = True
 
-        print (f"We are online as {self.user}.")
+        print(f"We are online as {self.user}.")
+
 
 aclient = client()
-tree = app_commands.CommandTree(aclient)
 
-@tree.command(name = "balance", description= "Check you Balance")
-async def balance(interaction: discord.Integration):
-    coins = await checar_saldo(interaction.user)
-    await interaction.response.send_message(f"You have a balance of {coins}")
+aclient.run(TOKEN)
 
-aclient.run(os.getenv("BOT_TOKEN"))
