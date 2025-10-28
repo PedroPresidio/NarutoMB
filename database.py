@@ -51,7 +51,7 @@ async def favoritos(usuario):
         return []
 
 
-async def favoritar(usuario, card):
+async def favoritar(usuario, card: str):
     await novo_usuario(usuario)
     filter = {"discord_id": usuario.id}
     fav = await favoritos(usuario)

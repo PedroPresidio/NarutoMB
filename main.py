@@ -3,15 +3,15 @@ from dotenv import load_dotenv
 import os
 from pymongo import MongoClient
 from discord.ext import commands
-import rolls
+import functions.rolls as rolls
 from database import *
+import functions.favorite as favorite
 
 load_dotenv()
 
 TOKEN = os.getenv("BOT_TOKEN")
 MONGODB_TOKEN = os.getenv("MONGODB_TOKEN")
 
-# Rename the Mongo client variable to avoid colliding with the bot class name
 mongo_client = MongoClient(MONGODB_TOKEN)
 db = mongo_client["FavListDB"]
 
@@ -21,8 +21,14 @@ class client(commands.Bot):
         super().__init__(command_prefix=commands.when_mentioned, intents=discord.Intents.default())
         self.synced = False
 
+    async def setup_hook(self) -> None:
+        """Called by discord.py before the connection is made. Add cogs here with await."""
+        # Add cogs here so they are registered before sync/on_ready
+        await self.add_cog(rolls.RollCog(self))
+        await self.add_cog(favorite.FavoritesCog(self))
+
     async def on_ready(self):
-        # sync commands (prefer guild sync for development when GUILD_ID is set)
+        
         if not self.synced:
             guild_id = os.getenv("GUILD_ID")
             if guild_id:
@@ -41,20 +47,8 @@ class client(commands.Bot):
 
             self.synced = True
 
-        # Debug: list registered app commands
-        try:
-            cmds = list(self.tree.get_commands())
-            print(f"Registered app commands ({len(cmds)}): {[c.name for c in cmds]}")
-        except Exception as e:
-            print("Could not list commands:", e)
-
-        print(f"We are online as {self.user}.")
-
 
 aclient = client()
-
-# Add cogs so slash commands defined in them are registered
-aclient.add_cog(rolls.RollCog(aclient))
 
 aclient.run(TOKEN)
 
