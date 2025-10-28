@@ -18,7 +18,7 @@ class FavoritesCog(commands.Cog):
             favs = ", ".join(user_data["favorites"])
             await interaction.response.send_message(f"⭐ Your favorite Pokémon: {favs}")
         else:
-            await interaction.response.send_message("You don’t have any favorites yet! Use `/roll` to add one!")
+            await interaction.response.send_message("You do not have any favorites yet! Use `/roll` to add one!")
 
 async def setup(bot):
     await bot.add_cog(FavoritesCog(bot))
